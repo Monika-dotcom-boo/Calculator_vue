@@ -11,34 +11,35 @@
         </tr>
   <tbody>
     <tr>
-      <td v-on:click="clearField">C</td>
-      <td v-on:click="setNagativerOrPosiive">+/-</td>
-      <td v-on:click="calculatePercenage">%</td>
-      <td class="lastColumn"><svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path fill="#fff" d="M272 96a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 320a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM400 288c17.7 0 32-14.3 32-32s-14.3-32-32-32H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H400z"/></svg></td>
+        <td @click="clearField">C</td>
+        <td @click="setNagativerOrPosiive">+/-</td>
+        <td @click="calculatePercenage">%</td>
+        <td class="lastColumn" @click="processOutput('divide')">
+            <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path fill="#fff" d="M272 96a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 320a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM400 288c17.7 0 32-14.3 32-32s-14.3-32-32-32H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H400z"/></svg>
+        </td>
     </tr>
     <tr>
-        <td v-on:click="getNumber(7)">7</td>
-        <td v-on:click="getNumber(8)">8</td>
-        <td v-on:click="getNumber(9)">9</td>
-        <td class="lastColumn">x</td>
+        <td @click="getNumber(7)">7</td>
+        <td @click="getNumber(8)">8</td>
+        <td @click="getNumber(9)">9</td>
+        <td class="lastColumn" @click="processOutput('multiply')">x</td>
     </tr>
     <tr>
-        <td v-on:click="getNumber(4)">4</td>
-        <td v-on:click="getNumber(5)">5</td>
-        <td v-on:click="getNumber(6)">6</td>
-        <td class="lastColumn">-</td>
+        <td @click="getNumber(4)">4</td>
+        <td @click="getNumber(5)">5</td>
+        <td @click="getNumber(6)">6</td>
+        <td class="lastColumn" @click="processOutput('substract')">-</td>
     </tr>
     <tr>
-        <td v-on:click="getNumber(1)">1</td>
-        <td v-on:click="getNumber(2)">2</td>
-        <td v-on:click="getNumber(3)">3</td>
-        <td class="lastColumn" 
-        @click="processOutput">+</td>
+        <td @click="getNumber(1)">1</td>
+        <td @click="getNumber(2)">2</td>
+        <td @click="getNumber(3)">3</td>
+        <td class="lastColumn" @click="processOutput('add')">+</td>
     </tr>
     <tr>
-        <td colspan="2" v-on:click="getNumber(0)">0</td>
-        <td  v-on:click="getDok()">.</td>
-        <td class="lastColumn">=</td>
+        <td colspan="2" @click="getNumber(0)">0</td>
+        <td @click="getDot()">.</td>
+        <td class="lastColumn" @click="updateOutput">=</td>
     </tr>    
   </tbody>
 </table>
@@ -54,12 +55,15 @@ export default {
     }, 
     data(){
         return{
-            output: ""
+            output: '', 
+            previousValue: null, 
+            oprationFired: false, 
+            operation: null
         }
     }, 
     methods: {
         clearField() {
-            this.output = 0;
+            this.output = '';
         }, 
         setNagativerOrPosiive(){
             this.output = this.output[0] === '-' ? this.output.slice(1) : `-${this.output}`;
@@ -68,20 +72,60 @@ export default {
             this.output = parseFloat(this.output)/100; 
         }, 
         getNumber(number){
-             this.output = `${this.output}${number}`
+            if(this.oprationFired){
+              this.output = '';  
+              this.oprationFired = false;
+            }
+
+            if(this.output === '0') {
+                if (number === 0) {
+                    return
+                }
+                this.output = ''
+            }
+
+            this.output = `${this.output}${number}`
         }, 
         getDot(){
             if(this.output.indexOf('.') === -1){
+                if (this.output === '') {
+                    this.output = '0'
+                }
                 this.output = this.output+'.';
             }
         }, 
-        processOutput(){
-            this.operation = (a,b) => {
-            return parseFloat(a) + parseFloat(b) 
+        processOutput(string){
+            if (this.output === '') {
+                this.output = '0'
             }
-        }, 
+
+            if(string === 'add') {
+                this.operation = (a,b) => {
+                    return parseFloat(a) + parseFloat(b);
+                }   
+            } else if(string === 'substract'){
+                this.operation = (a,b) => {
+                    return parseFloat(a) - parseFloat(b);
+                } 
+            } else if(string === 'divide'){
+                this.operation = (a,b) => {
+                    return parseFloat(a) / parseFloat(b);
+                } 
+            } else if(string === 'multiply'){
+                this.operation = (a,b) => {
+                    return parseFloat(a) * parseFloat(b);
+                }
+            }
+            this.previousValue = this.output;
+            this.oprationFired = true;
+        },
         updateOutput(){
-            this.operation = ``
+            if (!this.operation) {
+                return
+            }
+            this.output = `${this.operation(this.previousValue,this.output)}`;
+            this.operation = null;
+            this.oprationFired = true;
         }
     }
 }
@@ -89,6 +133,7 @@ export default {
 </script>
 
 <style scoped>
+
     .output{
         background-color: #333;
         color:#fff;
