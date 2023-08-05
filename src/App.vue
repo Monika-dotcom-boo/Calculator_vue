@@ -1,6 +1,6 @@
 
 <template>
-<div>..</div>
+<div class="flex flex-wrap justify-center">..</div>
 </template>
 
 
