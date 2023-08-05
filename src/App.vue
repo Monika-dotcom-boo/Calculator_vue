@@ -1,10 +1,11 @@
-
 <template>
-<div class="flex flex-wrap justify-center">..</div>
+  <Calculator msg="Calculator"/>
 </template>
 
-
 <script setup>
+import Calculator from "./components/Calculator.vue";
+
+
 
 </script>
 
